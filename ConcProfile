@@ -1,0 +1,415 @@
+% Properties that correspond to app components
+    properties (Access = public)
+        UIFigure                      matlab.ui.Figure
+        CaseSwitch                    matlab.ui.control.ToggleSwitch
+        UITable                       matlab.ui.control.Table
+        JohnHutchinsonRocketsutoledoeduLabel  matlab.ui.control.Label
+        JohnHutchinsonLabel           matlab.ui.control.Label
+        DrConstanceSchallLabel        matlab.ui.control.Label
+        Image                         matlab.ui.control.Image
+        RunButton                     matlab.ui.control.Button
+        Time5hEditField               matlab.ui.control.NumericEditField
+        Time5hEditFieldLabel          matlab.ui.control.Label
+        Time4hEditField               matlab.ui.control.NumericEditField
+        Time4hEditFieldLabel          matlab.ui.control.Label
+        Time3hEditField               matlab.ui.control.NumericEditField
+        Time3hEditFieldLabel          matlab.ui.control.Label
+        Time2hEditField               matlab.ui.control.NumericEditField
+        Time2hEditFieldLabel          matlab.ui.control.Label
+        Time1hEditField               matlab.ui.control.NumericEditField
+        Time1hEditFieldLabel          matlab.ui.control.Label
+        LengthofGelPlugcmEditField    matlab.ui.control.NumericEditField
+        LengthofGelPlugcmEditFieldLabel  matlab.ui.control.Label
+        LengthofCapillarycmEditField  matlab.ui.control.NumericEditField
+        LengthofCapillarycmEditFieldLabel  matlab.ui.control.Label
+        EffectiveDiffusivityofGelPlugcm2sEditField  matlab.ui.control.NumericEditField
+        EffectiveDiffusivityofGelPlugcm2sEditFieldLabel  matlab.ui.control.Label
+        FreeDiffusioncm2sEditField    matlab.ui.control.NumericEditField
+        FreeDiffusioncm2sEditFieldLabel  matlab.ui.control.Label
+        UIAxes                        matlab.ui.control.UIAxes
+    end
+
+    
+    properties (Access = private)
+       FreeDiff=0 % Free Diffusion Coefficient (cm^2/hr)
+       GelDiff=0 % Effective Diffusivity of Gel Layer (cm^2/hr)
+       CapLength=0 % Length of Capillary (cm)
+       GelLength=0 % Length of Gel Layer (cm)
+       % Time Values (hr)
+       Tm1=1
+       Tm2=1
+       Tm3=1
+       Tm4=1
+       Tm5=1
+    Case = 'Case 1: No Plug'
+       
+    end
+    
+
+    % Callbacks that handle component events
+    methods (Access = private)
+
+        % Value changed function: FreeDiffusioncm2sEditField
+        function FreeDiffusioncm2sEditFieldValueChanged(app, event)
+            app.FreeDiff = app.FreeDiffusioncm2sEditField.Value;
+            
+        end
+
+        % Value changed function: 
+        % EffectiveDiffusivityofGelPlugcm2sEditField
+        function EffectiveDiffusivityofGelPlugcm2sEditFieldValueChanged(app, event)
+            app.GelDiff = app.EffectiveDiffusivityofGelPlugcm2sEditField.Value;
+            
+        end
+
+        % Value changed function: LengthofCapillarycmEditField
+        function LengthofCapillarycmEditFieldValueChanged(app, event)
+            app.CapLength = app.LengthofCapillarycmEditField.Value;
+            
+        end
+
+        % Value changed function: LengthofGelPlugcmEditField
+        function LengthofGelPlugcmEditFieldValueChanged(app, event)
+            app.GelLength = app.LengthofGelPlugcmEditField.Value;
+            
+        end
+
+        % Value changed function: Time1hEditField
+        function Time1hEditFieldValueChanged(app, event)
+            app.Tm1 = app.Time1hEditField.Value;
+            
+        end
+
+        % Value changed function: Time2hEditField
+        function Time2hEditFieldValueChanged(app, event)
+            app.Tm2 = app.Time2hEditField.Value;
+            
+        end
+
+        % Value changed function: Time3hEditField
+        function Time3hEditFieldValueChanged(app, event)
+            app.Tm3 = app.Time3hEditField.Value;
+            
+        end
+
+        % Value changed function: Time4hEditField
+        function Time4hEditFieldValueChanged(app, event)
+           app.Tm4 = app.Time4hEditField.Value;
+            
+        end
+
+        % Value changed function: Time5hEditField
+        function Time5hEditFieldValueChanged(app, event)
+            app.Tm5 = app.Time5hEditField.Value;
+            
+        end
+
+        % Callback function
+        function Time6hrEditFieldValueChanged(app, event)
+            app.Tm6 = app.Time6hrEditField.Value;
+            
+        end
+
+        % Callback function
+        function Time7hrEditFieldValueChanged(app, event)
+           app.Tm7 = app.Time7hrEditField.Value;
+            
+        end
+
+        % Callback function
+        function Time8hrEditFieldValueChanged(app, event)
+            app.Tm8 = app.Time8hrEditField.Value;
+            
+        end
+
+        % Callback function
+        function Time9hrEditFieldValueChanged(app, event)
+            app.Tm9 = app.Time9hrEditField.Value;
+            
+        end
+
+        % Callback function
+        function Time10hrEditFieldValueChanged(app, event)
+            app.Tm10 = app.Time10hrEditField.Value;
+            
+        end
+
+        % Button pushed function: RunButton
+        function RunButtonPushed(app, event)
+NXA= 50;
+length=app.GelLength+app.CapLength;
+CapBound=(app.GelLength+(app.CapLength)/2);
+            % Parameters
+m     = 3;                               % Number of layers 
+kappa = [(app.GelDiff*3600), (app.FreeDiff*3600), (app.FreeDiff*3600) ];  % Diffusivities  
+l0    = 0.0;                             % Left end of slab
+lm    = length;                          % Right end of slab
+l     = [app.GelLength, CapBound];       % Location of interfaces
+u0    = @(x) zeros(size(x));             % Initial condition
+Lbnd  = {'Dirichlet',1.0,0.0,1.0};       % Boundary condition (x = l0)
+Rbnd  = {'Neumann',0.0,1.0,0.0};         % Boundary condition (x = lm)
+
+tspan = [1 app.Tm1 app.Tm2 app.Tm3 app.Tm4 app.Tm5];        
+% Times at which to compute solution  in hours
+
+[u,x] = multdiff(m,kappa,l0,lm,l,u0,Lbnd,Rbnd,tspan,'Perfect');
+
+
+% split the matrix in 3 parts
+sumM(1,:) = sum(u(1:(1*NXA+1),:));
+sumM(2,:) = sum(u((NXA+3):(2*NXA+2),:));
+sumM(3,:) = sum(u((2*NXA+4):(3*NXA+3),:));
+
+
+disp(sumM);    % here it shows the sum of each section of "u".  its easier to check using excell
+
+layer1=sumM(1,:);
+layer2=sumM(2,:);
+layer3= sumM(3,:);
+
+
+if app.Case == 'Case 1: No Plug '
+    % 5.9 capilary length  150  is the number of points
+% 50points per section 
+%Line223
+AAA= (((length)/(3*NXA+1))/(length))*100;  % US =>HERE CORRECTION IN FUNCTION OF DX FOR THE CAPILLARY -- PT =>aqui correcao em funcao de dx para o capilar)
+
+%TOTAL = [t1*AAA t2*AAA t3*AAA t4*AAA t5*AAA t6*AAA t7*AAA t8*AAA t9*AAA t10*AAA ]
+T_T1=layer1*AAA;  % SECOND LAYER FREE CAPILLARY
+T_T2=layer2*AAA;  % SECOND LAYER FREE CAPILLARY
+T_T3=layer3*AAA;  % THIRD LAYER FREE CAPILLARY   MUST SUM BOTH
+    
+    TOTAL =  (T_T1 + T_T2 + T_T3);
+else
+    % 5.9 capilary length  150  is the number of points
+% 50points per section 
+%Line223
+AAA= (((lm-l(1))/(2*NXA))/(lm-l(1)))*100;  % US =>HERE CORRECTION IN FUNCTION OF DX FOR THE CAPILLARY -- PT =>aqui correcao em funcao de dx para o capilar)
+
+%TOTAL = [t1*AAA t2*AAA t3*AAA t4*AAA t5*AAA t6*AAA t7*AAA t8*AAA t9*AAA t10*AAA ]
+T_T1=layer1*AAA;  % SECOND LAYER FREE CAPILLARY
+T_T2=layer2*AAA;  % SECOND LAYER FREE CAPILLARY
+T_T3=layer3*AAA;  % THIRD LAYER FREE CAPILLARY   MUST SUM BOTH
+    
+    TOTAL =  (T_T2 + T_T3);
+end
+Final = TOTAL/100;
+
+Tabledata = [tspan(2), Final(2); tspan(3), Final(3);tspan(4), Final(4);tspan(5), Final(5);tspan(6), Final(6)];
+
+app.UITable.Data = [Tabledata];
+
+
+
+plot(app.UIAxes2,tspan,Final);
+
+Xcorr = x-app.GelLength;
+
+plot(app.UIAxes,Xcorr,u(:,1),'b','LineWidth',2.0)
+axis([0,1,-0.1,1.1])
+set(gca,'FontSize',14,'Layer','top')
+        end
+
+        % Value changed function: CaseSwitch
+        function CaseSwitchValueChanged(app, event)
+            value = app.CaseSwitch.Value;
+            app.Case = app.CaseSwitch.Value;
+            if app.Case == 'Case 1: No Plug '
+                app.LengthofFirstLayercmEditFieldLabel.Text= 'Length of First Layer (cm)';
+                app.EffectiveDiffusivityofGelPlugcm2sEditFieldLabel.Text= 'Free Diffusion (cm^2/s)';
+            else
+                app.LengthofFirstLayercmEditFieldLabel.Text= 'Length of Gel Plug (cm)';
+                app.EffectiveDiffusivityofGelPlugcm2sEditFieldLabel.Text = 'Effective Diffusivity of Gel Plug (cm^2/s)'
+            end
+        end
+    end
+
+    % Component initialization
+    methods (Access = private)
+
+        % Create UIFigure and components
+        function createComponents(app)
+
+            % Create UIFigure and hide until all components are created
+            app.UIFigure = uifigure('Visible', 'off');
+            app.UIFigure.Position = [100 100 780 562];
+            app.UIFigure.Name = 'UI Figure';
+
+            % Create UIAxes
+            app.UIAxes = uiaxes(app.UIFigure);
+            title(app.UIAxes, 'Equilibration Profile')
+            xlabel(app.UIAxes, 'Length (cm)')
+            ylabel(app.UIAxes, 'C/Cres')
+            app.UIAxes.XTickLabelRotation = 0;
+            app.UIAxes.YTickLabelRotation = 0;
+            app.UIAxes.ZTickLabelRotation = 0;
+            app.UIAxes.Position = [333 328 430 216];
+
+            % Create FreeDiffusioncm2sEditFieldLabel
+            app.FreeDiffusioncm2sEditFieldLabel = uilabel(app.UIFigure);
+            app.FreeDiffusioncm2sEditFieldLabel.HorizontalAlignment = 'right';
+            app.FreeDiffusioncm2sEditFieldLabel.Position = [1 532 129 22];
+            app.FreeDiffusioncm2sEditFieldLabel.Text = 'Free Diffusion (cm^2/s)';
+
+            % Create FreeDiffusioncm2sEditField
+            app.FreeDiffusioncm2sEditField = uieditfield(app.UIFigure, 'numeric');
+            app.FreeDiffusioncm2sEditField.ValueChangedFcn = createCallbackFcn(app, @FreeDiffusioncm2sEditFieldValueChanged, true);
+            app.FreeDiffusioncm2sEditField.Position = [145 532 100 22];
+
+            % Create EffectiveDiffusivityofGelPlugcm2sEditFieldLabel
+            app.EffectiveDiffusivityofGelPlugcm2sEditFieldLabel = uilabel(app.UIFigure);
+            app.EffectiveDiffusivityofGelPlugcm2sEditFieldLabel.HorizontalAlignment = 'right';
+            app.EffectiveDiffusivityofGelPlugcm2sEditFieldLabel.Position = [1 503 218 22];
+            app.EffectiveDiffusivityofGelPlugcm2sEditFieldLabel.Text = 'Effective Diffusivity of Gel Plug (cm^2/s)';
+
+            % Create EffectiveDiffusivityofGelPlugcm2sEditField
+            app.EffectiveDiffusivityofGelPlugcm2sEditField = uieditfield(app.UIFigure, 'numeric');
+            app.EffectiveDiffusivityofGelPlugcm2sEditField.ValueChangedFcn = createCallbackFcn(app, @EffectiveDiffusivityofGelPlugcm2sEditFieldValueChanged, true);
+            app.EffectiveDiffusivityofGelPlugcm2sEditField.Position = [234 503 100 22];
+
+            % Create LengthofCapillarycmEditFieldLabel
+            app.LengthofCapillarycmEditFieldLabel = uilabel(app.UIFigure);
+            app.LengthofCapillarycmEditFieldLabel.HorizontalAlignment = 'right';
+            app.LengthofCapillarycmEditFieldLabel.Position = [2 472 133 22];
+            app.LengthofCapillarycmEditFieldLabel.Text = 'Length of Capillary (cm)';
+
+            % Create LengthofCapillarycmEditField
+            app.LengthofCapillarycmEditField = uieditfield(app.UIFigure, 'numeric');
+            app.LengthofCapillarycmEditField.ValueChangedFcn = createCallbackFcn(app, @LengthofCapillarycmEditFieldValueChanged, true);
+            app.LengthofCapillarycmEditField.Position = [150 472 100 22];
+
+            % Create LengthofGelPlugcmEditFieldLabel
+            app.LengthofGelPlugcmEditFieldLabel = uilabel(app.UIFigure);
+            app.LengthofGelPlugcmEditFieldLabel.HorizontalAlignment = 'right';
+            app.LengthofGelPlugcmEditFieldLabel.Position = [3 444 132 22];
+            app.LengthofGelPlugcmEditFieldLabel.Text = 'Length of Gel Plug (cm)';
+
+            % Create LengthofGelPlugcmEditField
+            app.LengthofGelPlugcmEditField = uieditfield(app.UIFigure, 'numeric');
+            app.LengthofGelPlugcmEditField.ValueChangedFcn = createCallbackFcn(app, @LengthofGelPlugcmEditFieldValueChanged, true);
+            app.LengthofGelPlugcmEditField.Position = [150 444 100 22];
+
+            % Create Time1hEditFieldLabel
+            app.Time1hEditFieldLabel = uilabel(app.UIFigure);
+            app.Time1hEditFieldLabel.HorizontalAlignment = 'right';
+            app.Time1hEditFieldLabel.Position = [7 423 59 22];
+            app.Time1hEditFieldLabel.Text = 'Time 1 (h)';
+
+            % Create Time1hEditField
+            app.Time1hEditField = uieditfield(app.UIFigure, 'numeric');
+            app.Time1hEditField.ValueChangedFcn = createCallbackFcn(app, @Time1hEditFieldValueChanged, true);
+            app.Time1hEditField.Position = [81 423 100 22];
+
+            % Create Time2hEditFieldLabel
+            app.Time2hEditFieldLabel = uilabel(app.UIFigure);
+            app.Time2hEditFieldLabel.HorizontalAlignment = 'right';
+            app.Time2hEditFieldLabel.Position = [7 391 59 22];
+            app.Time2hEditFieldLabel.Text = 'Time 2 (h)';
+
+            % Create Time2hEditField
+            app.Time2hEditField = uieditfield(app.UIFigure, 'numeric');
+            app.Time2hEditField.ValueChangedFcn = createCallbackFcn(app, @Time2hEditFieldValueChanged, true);
+            app.Time2hEditField.Position = [81 391 100 22];
+
+            % Create Time3hEditFieldLabel
+            app.Time3hEditFieldLabel = uilabel(app.UIFigure);
+            app.Time3hEditFieldLabel.HorizontalAlignment = 'right';
+            app.Time3hEditFieldLabel.Position = [7 359 59 22];
+            app.Time3hEditFieldLabel.Text = 'Time 3 (h)';
+
+            % Create Time3hEditField
+            app.Time3hEditField = uieditfield(app.UIFigure, 'numeric');
+            app.Time3hEditField.ValueChangedFcn = createCallbackFcn(app, @Time3hEditFieldValueChanged, true);
+            app.Time3hEditField.Position = [81 359 100 22];
+
+            % Create Time4hEditFieldLabel
+            app.Time4hEditFieldLabel = uilabel(app.UIFigure);
+            app.Time4hEditFieldLabel.HorizontalAlignment = 'right';
+            app.Time4hEditFieldLabel.Position = [7 328 59 22];
+            app.Time4hEditFieldLabel.Text = 'Time 4 (h)';
+
+            % Create Time4hEditField
+            app.Time4hEditField = uieditfield(app.UIFigure, 'numeric');
+            app.Time4hEditField.ValueChangedFcn = createCallbackFcn(app, @Time4hEditFieldValueChanged, true);
+            app.Time4hEditField.Position = [81 328 100 22];
+
+            % Create Time5hEditFieldLabel
+            app.Time5hEditFieldLabel = uilabel(app.UIFigure);
+            app.Time5hEditFieldLabel.HorizontalAlignment = 'right';
+            app.Time5hEditFieldLabel.Position = [7 297 59 22];
+            app.Time5hEditFieldLabel.Text = 'Time 5 (h)';
+
+            % Create Time5hEditField
+            app.Time5hEditField = uieditfield(app.UIFigure, 'numeric');
+            app.Time5hEditField.ValueChangedFcn = createCallbackFcn(app, @Time5hEditFieldValueChanged, true);
+            app.Time5hEditField.Position = [81 297 100 22];
+
+            % Create RunButton
+            app.RunButton = uibutton(app.UIFigure, 'push');
+            app.RunButton.ButtonPushedFcn = createCallbackFcn(app, @RunButtonPushed, true);
+            app.RunButton.Position = [244 218 100 22];
+            app.RunButton.Text = 'Run';
+
+            % Create Image
+            app.Image = uiimage(app.UIFigure);
+            app.Image.Position = [1 1 391 66];
+            app.Image.ImageSource = 'b0a7a4f85e602b359372126034210d0f.jpg';
+
+            % Create DrConstanceSchallLabel
+            app.DrConstanceSchallLabel = uilabel(app.UIFigure);
+            app.DrConstanceSchallLabel.Position = [506 45 118 22];
+            app.DrConstanceSchallLabel.Text = 'Dr. Constance Schall';
+
+            % Create JohnHutchinsonLabel
+            app.JohnHutchinsonLabel = uilabel(app.UIFigure);
+            app.JohnHutchinsonLabel.Position = [517 23 95 22];
+            app.JohnHutchinsonLabel.Text = 'John Hutchinson';
+
+            % Create JohnHutchinsonRocketsutoledoeduLabel
+            app.JohnHutchinsonRocketsutoledoeduLabel = uilabel(app.UIFigure);
+            app.JohnHutchinsonRocketsutoledoeduLabel.Position = [456 3 217 22];
+            app.JohnHutchinsonRocketsutoledoeduLabel.Text = 'John.Hutchinson@Rockets.utoledo.edu';
+
+            % Create UITable
+            app.UITable = uitable(app.UIFigure);
+            app.UITable.ColumnName = {'Time (h)'; 'C/C0'};
+            app.UITable.RowName = {};
+            app.UITable.Position = [425 113 302 185];
+
+            % Create CaseSwitch
+            app.CaseSwitch = uiswitch(app.UIFigure, 'toggle');
+            app.CaseSwitch.Items = {'Case 2: Gel Plug', 'Case 1: No Plug '};
+            app.CaseSwitch.ValueChangedFcn = createCallbackFcn(app, @CaseSwitchValueChanged, true);
+            app.CaseSwitch.Position = [65 174 20 45];
+            app.CaseSwitch.Value = 'Case 1: No Plug ';
+
+            % Show the figure after all components are created
+            app.UIFigure.Visible = 'on';
+        end
+    end
+
+    % App creation and deletion
+    methods (Access = public)
+
+        % Construct app
+        function app = ConcentrationApp_Graph_V18
+
+            % Create UIFigure and components
+            createComponents(app)
+
+            % Register the app with App Designer
+            registerApp(app, app.UIFigure)
+
+            if nargout == 0
+                clear app
+            end
+        end
+
+        % Code that executes before app deletion
+        function delete(app)
+
+            % Delete UIFigure when app is deleted
+            delete(app.UIFigure)
+        end
+    end
+end
